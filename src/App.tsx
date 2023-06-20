@@ -22,7 +22,7 @@ function myCompletions(context: any) {
 
 export const custom = SQLDialect.define({
   keywords:
-    "default.cars default.animals default.fishes default  proc view index for add constraint key primary foreign collate clustered nonclustered declare exec go if use index holdlock nolock nowait paglock pivot readcommitted readcommittedlock readpast readuncommitted repeatableread rowlock serializable snapshot tablock tablockx unpivot updlock with",
+    "default  proc view index for add constraint key primary foreign collate clustered nonclustered declare exec go if use index holdlock nolock nowait paglock pivot readcommitted readcommittedlock readpast readuncommitted repeatableread rowlock serializable snapshot tablock tablockx unpivot updlock with",
   types:
     "bigint smallint smallmoney tinyint money real text nvarchar ntext varbinary image hierarchyid uniqueidentifier sql_variant xml",
   builtin:
@@ -42,12 +42,12 @@ function App() {
         height="300px"
         width="500px"
         extensions={[
-          sql(),
+          sql({dialect:PostgreSQL}),
           autocompletion({ override: [myCompletions,schemaCompletionSource({
             dialect: PostgreSQL,
-            schema: {},
+            schema: {"custom":[]},
             schemas: [{ label: "goodbye" ,type:"function" }],
-          })] }),
+          }),keywordCompletionSource(PostgreSQL)] }),
         ]}
         onChange={onChange}
         basicSetup={{ lineNumbers: true }}
