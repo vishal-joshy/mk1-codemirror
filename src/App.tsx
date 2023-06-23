@@ -1,35 +1,20 @@
-import { autocompletion } from "@codemirror/autocomplete";
+import { autocompletion, snippetCompletion } from "@codemirror/autocomplete";
 import {
   sql,
   PostgreSQL,
   keywordCompletionSource,
   schemaCompletionSource,
-  SQLDialect,
 } from "@codemirror/lang-sql";
 import ReactCodeMirror, { oneDark } from "@uiw/react-codemirror";
 
 function myCompletions(context: any) {
-  const word = context.matchBefore(/\w*/)
-  if (word.from == word.to && !context.explicit)
-    return null
+  const word = context.matchBefore(/\w*/);
+  if (word.from == word.to && !context.explicit) return null;
   return {
     from: word.from,
-    options: [
-      { label: "Hello", type: "keyword" },
-    ]
-  }
+    options: [{ label: "Hello", type: "keyword" }],
+  };
 }
-
-export const custom = SQLDialect.define({
-  keywords:
-    "default  proc view index for add constraint key primary foreign collate clustered nonclustered declare exec go if use index holdlock nolock nowait paglock pivot readcommitted readcommittedlock readpast readuncommitted repeatableread rowlock serializable snapshot tablock tablockx unpivot updlock with",
-  types:
-    "bigint smallint smallmoney tinyint money real text nvarchar ntext varbinary image hierarchyid uniqueidentifier sql_variant xml",
-  builtin:
-    "binary_checksum checksum connectionproperty context_info current_request_id error_line error_message error_number error_procedure error_severity error_state formatmessage get_filestream_transaction_context getansinull host_id host_name isnull isnumeric min_active_rowversion newid newsequentialid rowcount_big xact_state object_id",
-  operatorChars: "*+-%<>!=^&|/",
-  specialVar: "@",
-});
 
 function App() {
   function onChange(value: any, viewUpdate: any) {
@@ -42,12 +27,18 @@ function App() {
         height="300px"
         width="500px"
         extensions={[
-          sql({dialect:PostgreSQL}),
-          autocompletion({ override: [myCompletions,schemaCompletionSource({
-            dialect: PostgreSQL,
-            schema: {"custom":[]},
-            schemas: [{ label: "goodbye" ,type:"function" }],
-          }),keywordCompletionSource(PostgreSQL)] }),
+          sql({ dialect: PostgreSQL }),
+          autocompletion({
+            override: [snippetcompp,
+              myCompletions,
+              schemaCompletionSource({
+                dialect: PostgreSQL,
+                schema: { custom: [] },
+                schemas: [{ label: "goodbye", type: "function" }],
+              }),
+              keywordCompletionSource(PostgreSQL),
+            ],
+          }),
         ]}
         onChange={onChange}
         basicSetup={{ lineNumbers: true }}
@@ -57,3 +48,39 @@ function App() {
 }
 
 export default App;
+
+function snippetcompp(context: any) {
+  const matchBefore = context.matchBefore(/\w*/);
+
+  if (!matchBefore) {
+    return null;
+  }
+
+  return {
+    from: matchBefore.from,
+    options: [
+      snippetCompletion("func(${req},${res})", {
+        label: "func",
+      }),
+      snippetCompletion("<bar>${}</bar>", {
+        label: "<bar></bar> empty (works)",
+      }),
+      // enable this to see the error
+      // snippetCompletion('<baz>${1}</baz>', {
+      //   label: '<baz></baz> numbered (error)',
+      // }),
+      snippetCompletion("<bar>${1:d}</bar>", {
+        label: "<bar></bar> named (works)",
+      }),
+      snippetCompletion("<bar>#{}</bar>", {
+        label: "<bar></bar> hash empty (works)",
+      }),
+      // snippetCompletion('<bar>#{1}</bar>', {
+      //   label: '<bar></bar> hash numbered (error)',
+      // }),
+      snippetCompletion("<bar>#{1:foo}|#{2:baar}</bar>", {
+        label: "<bar></bar> hash named (works)",
+      }),
+    ],
+  };
+}
